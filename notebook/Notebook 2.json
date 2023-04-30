@@ -1,0 +1,203 @@
+{
+	"name": "Notebook 2",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "SparkStream",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "dd3f8d4a-9344-4b89-a493-a8b91cd09510"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1"
+			},
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/63f17b4d-2366-4da7-94bf-60fc3d60e3d7/resourceGroups/rohithAmazeRG/providers/Microsoft.Synapse/workspaces/synapsestreaming/bigDataPools/SparkStream",
+				"name": "SparkStream",
+				"type": "Spark",
+				"endpoint": "https://synapsestreaming.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/SparkStream",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "3.3",
+				"nodeCount": 10,
+				"cores": 4,
+				"memory": 28,
+				"extraHeader": null
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "markdown",
+				"source": [
+					"# NOTE\n",
+					"\n",
+					"For Spark 3 Cosmos DB connector has slightly different configuration. Please select different snippest if a Spark 3.1 + pool is attached."
+				]
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"# Load a streaming Spark DataFrame from a Cosmos DB container\n",
+					"# To select a preferred list of regions in a multi-region Cosmos DB account, add .option(\"spark.cosmos.preferredRegions\", \"<Region1>,<Region2>\")\n",
+					"\n",
+					"# For Spark 2.4\n",
+					"# dfStream = spark.readStream\\\n",
+					"#     .format(\"cosmos.oltp\")\\\n",
+					"#     .option(\"spark.synapse.linkedService\", \"CosmosDbNoSql1\")\\\n",
+					"#     .option(\"spark.cosmos.container\", \"orders\")\\\n",
+					"#     .option(\"spark.cosmos.changeFeed.readEnabled\", \"true\")\\\n",
+					"#     .option(\"spark.cosmos.changeFeed.startFromTheBeginning\", \"true\")\\\n",
+					"#     .option(\"spark.cosmos.changeFeed.checkpointLocation\", \"/localReadCheckpointFolder\")\\\n",
+					"#     .option(\"spark.cosmos.changeFeed.queryName\", \"streamQuery\")\\\n",
+					"#     .load()\n",
+					"\n",
+					"# For Spark 3.1 +\n",
+					"dfStream = spark.readStream\\\n",
+					"    .format(\"cosmos.oltp.changeFeed\")\\\n",
+					"    .option(\"spark.synapse.linkedService\", \"CosmosDbNoSql1\")\\\n",
+					"    .option(\"spark.cosmos.container\", \"orders\")\\\n",
+					"    .option(\"spark.cosmos.changeFeed.startFrom\", \"Beginning\")\\\n",
+					"    .option(\"spark.cosmos.changeFeed.mode\", \"Incremental\")\\\n",
+					"    .load()\n",
+					""
+				],
+				"execution_count": 12
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from   pyspark.sql.functions import * "
+				],
+				"execution_count": 4
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"dfStream"
+				],
+				"execution_count": 5
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"dfStream=dfStream.withColumn(\"Order_Timestamp\",to_timestamp(\"Order_Timestamp\"))"
+				],
+				"execution_count": 6
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"dfStream.writeStream.outputMode(\"append\").format(\"delta\").option(\"path\",\"abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/streamoutput/\").option(\"checkpointLocation\",\"abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/checkpoint/\").start()"
+				],
+				"execution_count": 9
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"spark.read.load('abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/streamoutput/').columns"
+				],
+				"execution_count": 10
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"sc.stop()"
+				],
+				"execution_count": 11
+			}
+		]
+	}
+}

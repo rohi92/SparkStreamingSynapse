@@ -1,0 +1,165 @@
+{
+	"name": "Notebook 3",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "SparkStream",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "0d0a4d49-b5be-4e45-9b2e-e61fc1496e72"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1",
+				"state": {
+					"8aaf98b0-2049-4a3d-aee1-020a4b10d598": {
+						"type": "Synapse.DataFrame",
+						"sync_state": {
+							"table": {
+								"rows": [
+									{
+										"0": "R8QzAMArMxsBAAAAAAAAAA==",
+										"1": "1682281849",
+										"2": "123",
+										"3": "11",
+										"4": "2022-05-07 16:43:43.207",
+										"5": "11",
+										"6": "Instore",
+										"7": "e69eabe5-b10f-4589-91bc-84939ef74387",
+										"8": "\"0f004468-0000-0700-0000-644595790000\""
+									}
+								],
+								"schema": [
+									{
+										"key": "0",
+										"name": "_rid",
+										"type": "string"
+									},
+									{
+										"key": "1",
+										"name": "_ts",
+										"type": "bigint"
+									},
+									{
+										"key": "2",
+										"name": "Order_id",
+										"type": "string"
+									},
+									{
+										"key": "3",
+										"name": "Item_Id",
+										"type": "bigint"
+									},
+									{
+										"key": "4",
+										"name": "Order_Timestamp",
+										"type": "string"
+									},
+									{
+										"key": "5",
+										"name": "store_id",
+										"type": "bigint"
+									},
+									{
+										"key": "6",
+										"name": "Instore/OnlineOrder",
+										"type": "string"
+									},
+									{
+										"key": "7",
+										"name": "id",
+										"type": "string"
+									},
+									{
+										"key": "8",
+										"name": "_etag",
+										"type": "string"
+									}
+								],
+								"truncated": false
+							},
+							"isSummary": false,
+							"language": "scala"
+						},
+						"persist_state": {
+							"view": {
+								"type": "details",
+								"chartOptions": {
+									"chartType": "bar",
+									"aggregationType": "sum",
+									"categoryFieldKeys": [
+										"0"
+									],
+									"seriesFieldKeys": [
+										"1"
+									],
+									"isStacked": false
+								}
+							}
+						}
+					}
+				}
+			},
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/63f17b4d-2366-4da7-94bf-60fc3d60e3d7/resourceGroups/rohithAmazeRG/providers/Microsoft.Synapse/workspaces/synapsestreaming/bigDataPools/SparkStream",
+				"name": "SparkStream",
+				"type": "Spark",
+				"endpoint": "https://synapsestreaming.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/SparkStream",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "3.3",
+				"nodeCount": 10,
+				"cores": 4,
+				"memory": 28,
+				"extraHeader": null
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"metadata": {
+					"collapsed": false
+				},
+				"source": [
+					"# Read from Cosmos DB analytical store into a Spark DataFrame and display 10 rows from the DataFrame\n",
+					"# To select a preferred list of regions in a multi-region Cosmos DB account, add .option(\"spark.cosmos.preferredRegions\", \"<Region1>,<Region2>\")\n",
+					"\n",
+					"df = spark.read\\\n",
+					"    .format(\"cosmos.olap\")\\\n",
+					"    .option(\"spark.synapse.linkedService\", \"CosmosDbNoSql2\")\\\n",
+					"    .option(\"spark.cosmos.container\", \"orders\")\\\n",
+					"    .load()\n",
+					"\n",
+					"display(df.limit(10))"
+				],
+				"execution_count": 4
+			}
+		]
+	}
+}
