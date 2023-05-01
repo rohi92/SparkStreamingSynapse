@@ -18,7 +18,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "e8b421b5-17af-4b9b-b656-3488379066f2"
+				"spark.autotune.trackingId": "e98946c6-da9f-4bcb-82f4-6062c96bebc8"
 			}
 		},
 		"metadata": {
@@ -46,7 +46,7 @@
 				"memory": 28,
 				"automaticScaleJobs": false
 			},
-			"sessionKeepAliveTimeout": 5
+			"sessionKeepAliveTimeout": 30
 		},
 		"cells": [
 			{
@@ -101,7 +101,7 @@
 				"source": [
 					"from   pyspark.sql.functions import * "
 				],
-				"execution_count": null
+				"execution_count": 2
 			},
 			{
 				"cell_type": "code",
@@ -119,7 +119,7 @@
 				"source": [
 					"dfStream"
 				],
-				"execution_count": null
+				"execution_count": 3
 			},
 			{
 				"cell_type": "code",
@@ -137,7 +137,7 @@
 				"source": [
 					"dfStream=dfStream.withColumn(\"Order_Timestamp\",to_timestamp(\"Order_Timestamp\"))"
 				],
-				"execution_count": null
+				"execution_count": 4
 			},
 			{
 				"cell_type": "code",
@@ -155,7 +155,7 @@
 				"source": [
 					"dfStream.writeStream.outputMode(\"append\").format(\"delta\").option(\"path\",\"abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/streamoutput/\").option(\"checkpointLocation\",\"abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/checkpoint/\").start()"
 				],
-				"execution_count": null
+				"execution_count": 6
 			},
 			{
 				"cell_type": "code",
@@ -168,12 +168,13 @@
 						"transient": {
 							"deleting": false
 						}
-					}
+					},
+					"collapsed": false
 				},
 				"source": [
-					"spark.read.load('abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/streamoutput/').columns"
+					"display(spark.read.load('abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/streamoutput/'))"
 				],
-				"execution_count": null
+				"execution_count": 8
 			}
 		]
 	}
