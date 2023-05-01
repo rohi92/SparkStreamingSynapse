@@ -12,13 +12,13 @@
 			"driverCores": 4,
 			"executorMemory": "28g",
 			"executorCores": 4,
-			"numExecutors": 9,
+			"numExecutors": 2,
 			"runAsWorkspaceSystemIdentity": false,
 			"conf": {
 				"spark.dynamicAllocation.enabled": "false",
-				"spark.dynamicAllocation.minExecutors": "9",
-				"spark.dynamicAllocation.maxExecutors": "9",
-				"spark.autotune.trackingId": "85f38a40-185f-410c-b632-053e1573dbfd"
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "e8b421b5-17af-4b9b-b656-3488379066f2"
 			}
 		},
 		"metadata": {
@@ -46,7 +46,7 @@
 				"memory": 28,
 				"automaticScaleJobs": false
 			},
-			"sessionKeepAliveTimeout": 30
+			"sessionKeepAliveTimeout": 5
 		},
 		"cells": [
 			{
@@ -83,7 +83,7 @@
 					"    .option(\"spark.cosmos.changeFeed.mode\", \"Incremental\")\\\n",
 					"    .load()"
 				],
-				"execution_count": 2
+				"execution_count": 1
 			},
 			{
 				"cell_type": "code",
