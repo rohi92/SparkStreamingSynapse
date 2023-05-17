@@ -18,7 +18,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "c8d5ab80-e663-47bf-9906-8e7692670b53"
+				"spark.autotune.trackingId": "c81ffa7c-2419-4bba-b3be-b89be3709040"
 			}
 		},
 		"metadata": {
@@ -207,7 +207,7 @@
 					}
 				},
 				"source": [
-					"dfStream.writeStream.outputMode(\"append\").format(\"delta\").option(\"path\",\"abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/streamaggoutput/tumbling_Window/\").option(\"checkpointLocation\",\"abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/checkpoint/\").start()"
+					"dfStream1.writeStream.outputMode(\"append\").format(\"delta\").option(\"path\",\"abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/streamaggoutput/tumbling_Window/\").option(\"checkpointLocation\",\"abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/checkpoint/\").start()"
 				],
 				"execution_count": null
 			},
@@ -225,7 +225,7 @@
 					}
 				},
 				"source": [
-					"dfStream.writeStream.outputMode(\"append\").format(\"delta\").option(\"path\",\"abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/streamaggoutput/session_Window/\").option(\"checkpointLocation\",\"abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/checkpoint/\").start()"
+					"dfStream2.writeStream.outputMode(\"append\").format(\"delta\").option(\"path\",\"abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/streamaggoutput/session_Window/\").option(\"checkpointLocation\",\"abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/checkpoint/\").start()"
 				],
 				"execution_count": null
 			},
@@ -243,7 +243,8 @@
 					}
 				},
 				"source": [
-					""
+					"def merge_eachbatch(microbatchdf):\r\n",
+					"    "
 				],
 				"execution_count": null
 			},
