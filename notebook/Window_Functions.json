@@ -18,7 +18,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "a0e697aa-ebc4-4d92-b865-c585d20d3161"
+				"spark.autotune.trackingId": "5dd1efd7-389a-4d1b-b993-40361895d7ff"
 			}
 		},
 		"metadata": {
@@ -157,7 +157,7 @@
 				"source": [
 					"dfStream"
 				],
-				"execution_count": 34
+				"execution_count": 5
 			},
 			{
 				"cell_type": "code",
@@ -175,7 +175,7 @@
 				"source": [
 					"dfStream1=dfStream.groupBy(\"Item_Id\",\"Order_Date\",window(\"Order_Timestamp\",\"6 minutes\")).agg(sum(\"qty\")).alias(\"sum_qty\")"
 				],
-				"execution_count": 5
+				"execution_count": 6
 			},
 			{
 				"cell_type": "code",
@@ -193,7 +193,7 @@
 				"source": [
 					"dfStream1=dfStream1.withColumnRenamed(\"sum(qty)\",\"sum_qty\")"
 				],
-				"execution_count": 6
+				"execution_count": 7
 			},
 			{
 				"cell_type": "code",
@@ -265,7 +265,7 @@
 				"source": [
 					"tum_window=spark.read.load(\"abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/streamoutput_tumbling/\")"
 				],
-				"execution_count": 11
+				"execution_count": 12
 			},
 			{
 				"cell_type": "code",
@@ -283,10 +283,10 @@
 				"source": [
 					"def microbatch(batch_df,batch_id):\r\n",
 					"    delta_table=DeltaTable.forPath(spark, 'abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/streamoutput_tumbling/')\r\n",
-					"    print(delta_table)\r\n",
+					"    #print(delta_table)\r\n",
 					"    delta_table.alias('target').merge(batch_df.alias('updates'),'target.item_id = updates.item_id and target.window=updates.window and target.order_date=updates.order_date').whenMatchedUpdateAll().whenNotMatchedInsertAll().execute()"
 				],
-				"execution_count": 18
+				"execution_count": 9
 			},
 			{
 				"cell_type": "code",
@@ -304,7 +304,7 @@
 				"source": [
 					"dfStream2.writeStream.outputMode(\"complete\").foreachBatch(microbatch).option(\"checkpointLocation\",\"abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/checkpoint/\").start()"
 				],
-				"execution_count": 19
+				"execution_count": 10
 			},
 			{
 				"cell_type": "code",
@@ -364,7 +364,7 @@
 				"source": [
 					"tum_window.show(truncate=False)"
 				],
-				"execution_count": 20
+				"execution_count": 13
 			},
 			{
 				"cell_type": "code",
@@ -388,7 +388,7 @@
 					"\r\n",
 					"select current_timestamp()"
 				],
-				"execution_count": 15
+				"execution_count": 14
 			}
 		]
 	}
