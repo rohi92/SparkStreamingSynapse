@@ -18,7 +18,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "5dd1efd7-389a-4d1b-b993-40361895d7ff"
+				"spark.autotune.trackingId": "20d5fa72-1213-4194-8b3e-abdaf3373a32"
 			}
 		},
 		"metadata": {
@@ -83,7 +83,7 @@
 					"    .option(\"spark.cosmos.changeFeed.mode\", \"Incremental\")\\\n",
 					"    .load()"
 				],
-				"execution_count": 1
+				"execution_count": 32
 			},
 			{
 				"cell_type": "code",
@@ -103,7 +103,7 @@
 					"from pyspark.sql import *\r\n",
 					"from delta.tables import *"
 				],
-				"execution_count": 2
+				"execution_count": 33
 			},
 			{
 				"cell_type": "code",
@@ -121,7 +121,7 @@
 				"source": [
 					"dfStream=dfStream.withColumn(\"Order_Date\",to_date(\"Order_Timestamp\"))"
 				],
-				"execution_count": 3
+				"execution_count": 34
 			},
 			{
 				"cell_type": "code",
@@ -139,7 +139,7 @@
 				"source": [
 					"dfStream=dfStream.withColumn(\"Order_Timestamp\",to_timestamp(\"Order_Timestamp\"))"
 				],
-				"execution_count": 4
+				"execution_count": 35
 			},
 			{
 				"cell_type": "code",
@@ -157,7 +157,7 @@
 				"source": [
 					"dfStream"
 				],
-				"execution_count": 5
+				"execution_count": 36
 			},
 			{
 				"cell_type": "code",
@@ -173,9 +173,9 @@
 					}
 				},
 				"source": [
-					"dfStream1=dfStream.groupBy(\"Item_Id\",\"Order_Date\",window(\"Order_Timestamp\",\"6 minutes\")).agg(sum(\"qty\")).alias(\"sum_qty\")"
+					"dfStream1=dfStream.withWatermark('Order_Timestamp', '10 minutes').groupBy(\"Item_Id\",\"Order_Date\",window(\"Order_Timestamp\",\"6 minutes\")).agg(sum(\"qty\")).alias(\"sum_qty\")"
 				],
-				"execution_count": 6
+				"execution_count": 37
 			},
 			{
 				"cell_type": "code",
@@ -193,7 +193,7 @@
 				"source": [
 					"dfStream1=dfStream1.withColumnRenamed(\"sum(qty)\",\"sum_qty\")"
 				],
-				"execution_count": 7
+				"execution_count": 38
 			},
 			{
 				"cell_type": "code",
@@ -211,7 +211,7 @@
 				"source": [
 					"dfStream1"
 				],
-				"execution_count": 37
+				"execution_count": 39
 			},
 			{
 				"cell_type": "code",
@@ -247,7 +247,7 @@
 				"source": [
 					"dfStream1.writeStream.outputMode(\"complete\").format(\"delta\").option(\"path\",\"abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/streamoutput_tumbling/\").option(\"checkpointLocation\",\"abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/stream_tumbling_checkpoint/\").start()"
 				],
-				"execution_count": 54
+				"execution_count": 40
 			},
 			{
 				"cell_type": "code",
@@ -265,7 +265,7 @@
 				"source": [
 					"tum_window=spark.read.load(\"abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/streamoutput_tumbling/\")"
 				],
-				"execution_count": 12
+				"execution_count": 51
 			},
 			{
 				"cell_type": "code",
@@ -302,7 +302,7 @@
 					}
 				},
 				"source": [
-					"dfStream2.writeStream.outputMode(\"complete\").foreachBatch(microbatch).option(\"checkpointLocation\",\"abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/checkpoint/\").start()"
+					"dfStream1.writeStream.outputMode(\"complete\").foreachBatch(microbatch).option(\"checkpointLocation\",\"abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/checkpoint/\").start()"
 				],
 				"execution_count": 10
 			},
@@ -362,9 +362,9 @@
 					"collapsed": false
 				},
 				"source": [
-					"tum_window.show(truncate=False)"
+					"tum_window.count()"
 				],
-				"execution_count": 13
+				"execution_count": 52
 			},
 			{
 				"cell_type": "code",
@@ -386,9 +386,9 @@
 				"source": [
 					"%%sql\r\n",
 					"\r\n",
-					"select current_timestamp()"
+					"select * from delta.`abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/streamoutput_tumbling/`;"
 				],
-				"execution_count": 14
+				"execution_count": 1
 			}
 		]
 	}
