@@ -1,0 +1,41 @@
+{
+	"name": "Session_Window_Function",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "9a165f7a-117b-401f-9d77-c3b477fe9188"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "python"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"dfStream2.writeStream.outputMode(\"append\").format(\"delta\").option(\"path\",\"abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/streamaggoutput/session_Window/\").option(\"checkpointLocation\",\"abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/checkpoint/\").start()"
+				],
+				"execution_count": null
+			}
+		]
+	}
+}
