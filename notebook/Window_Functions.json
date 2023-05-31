@@ -18,7 +18,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "2e17aa91-9eb0-419f-9569-c4b4bacf5bff"
+				"spark.autotune.trackingId": "d7e5bf48-96c5-4880-bcb6-872530e58fb2"
 			}
 		},
 		"metadata": {
@@ -301,11 +301,11 @@
 				},
 				"source": [
 					"def microbatch(batch_df,batch_id):\r\n",
-					"    delta_table=DeltaTable.forPath(spark, 'abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/streamoutput_tumbling/')\r\n",
+					"    delta_table=DeltaTable.forPath(spark, 'abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/Tumbling_Window/')\r\n",
 					"    #print(delta_table)\r\n",
 					"    delta_table.alias('target').merge(batch_df.alias('updates'),'target.item_id = updates.item_id and target.window=updates.window and target.order_date=updates.order_date').whenMatchedUpdateAll().whenNotMatchedInsertAll().execute()"
 				],
-				"execution_count": 9
+				"execution_count": 16
 			},
 			{
 				"cell_type": "code",
@@ -323,7 +323,7 @@
 				"source": [
 					"dfStream1.writeStream.outputMode(\"complete\").foreachBatch(microbatch).option(\"checkpointLocation\",\"abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/checkpoint/\").start()"
 				],
-				"execution_count": 10
+				"execution_count": 17
 			},
 			{
 				"cell_type": "code",
@@ -405,9 +405,9 @@
 				"source": [
 					"%%sql\r\n",
 					"\r\n",
-					"select * from delta.`abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/streamoutput_tumbling/`;"
+					"select item_id,order_date,WINDOW_start_time,window_end_time,sum_qty from delta.`abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/Tumbling_Window/` order by WINDOW_start_time desc;"
 				],
-				"execution_count": 1
+				"execution_count": 25
 			}
 		]
 	}
