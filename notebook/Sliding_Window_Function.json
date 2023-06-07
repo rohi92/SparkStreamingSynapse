@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "a8960419-7081-4540-b4b0-0d407017be03"
+				"spark.autotune.trackingId": "cca2acef-7db5-42f6-9b8a-39f77323a0a8"
 			}
 		},
 		"metadata": {
@@ -131,9 +131,9 @@
 					}
 				},
 				"source": [
-					"dfStream1=dfStream.withWatermark('Order_Timestamp', '10 minutes').groupBy(\"Item_Id\",\"Order_Date\",session_window(\"Order_Timestamp\",\"8 minutes\",\"4 minutes\")).agg(sum(\"qty\")).alias(\"sum_qty\")"
+					"dfStream1=dfStream.withWatermark('Order_Timestamp', '10 minutes').groupBy(\"Item_Id\",\"Order_Date\",window(\"Order_Timestamp\",\"8 minutes\",\"4 minutes\")).agg(sum(\"qty\")).alias(\"sum_qty\")"
 				],
-				"execution_count": 18
+				"execution_count": 13
 			},
 			{
 				"cell_type": "code",
@@ -188,7 +188,7 @@
 					}
 				},
 				"source": [
-					"dfStream1.writeStream.outputMode(\"complete\").format(\"delta\").option(\"path\",\"abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/streamoutput/session_window\").option(\"checkpointLocation\",\"abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/sessoion_window_checkpoint/\").start()"
+					"dfStream1.writeStream.outputMode(\"complete\").format(\"delta\").option(\"path\",\"abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/streamoutput/sliding_window\").option(\"checkpointLocation\",\"abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/sliding_window_checkpoint/\").start()"
 				],
 				"execution_count": 16
 			},
@@ -208,7 +208,31 @@
 				"source": [
 					"#dfStream1.writeStream.outputMode(\"complete\").foreachBatch(microbatch).option(\"checkpointLocation\",\"abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/tumb_checkpoint/\").start()"
 				],
-				"execution_count": null
+				"execution_count": 17
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					},
+					"microsoft": {
+						"language": "sparksql"
+					},
+					"collapsed": false
+				},
+				"source": [
+					"%%sql\r\n",
+					"\r\n",
+					"select window.start,window.end,a.* from delta.`abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/streamoutput/sliding_window` a where item_id=10 order by 5 desc"
+				],
+				"execution_count": 37
 			}
 		]
 	}
