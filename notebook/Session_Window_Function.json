@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "a9630b53-bbea-4572-9e07-d350994871e7"
+				"spark.autotune.trackingId": "4e19468b-072b-4ec1-874a-6e2e69573f20"
 			}
 		},
 		"metadata": {
@@ -59,7 +59,7 @@
 					"    .option(\"spark.cosmos.changeFeed.mode\", \"Incremental\")\\\r\n",
 					"    .load()"
 				],
-				"execution_count": 1
+				"execution_count": 9
 			},
 			{
 				"cell_type": "code",
@@ -79,7 +79,7 @@
 					"from pyspark.sql import *\r\n",
 					"from delta.tables import *"
 				],
-				"execution_count": null
+				"execution_count": 10
 			},
 			{
 				"cell_type": "code",
@@ -97,7 +97,7 @@
 				"source": [
 					"dfStream=dfStream.withColumn(\"Order_Date\",to_date(\"Order_Timestamp\"))"
 				],
-				"execution_count": null
+				"execution_count": 11
 			},
 			{
 				"cell_type": "code",
@@ -115,7 +115,7 @@
 				"source": [
 					"dfStream=dfStream.withColumn(\"Order_Timestamp\",to_timestamp(\"Order_Timestamp\"))"
 				],
-				"execution_count": null
+				"execution_count": 12
 			},
 			{
 				"cell_type": "code",
@@ -131,9 +131,9 @@
 					}
 				},
 				"source": [
-					"dfStream1=dfStream.withWatermark('Order_Timestamp', '10 minutes').groupBy(\"Item_Id\",\"Order_Date\",session_window(\"Order_Timestamp\",\"6 minutes\")).agg(sum(\"qty\")).alias(\"sum_qty\")"
+					"dfStream1=dfStream.withWatermark('Order_Timestamp', '10 minutes').groupBy(\"Item_Id\",\"Order_Date\",session_window(\"Order_Timestamp\",\"8 minutes\",\"4 minutes\")).agg(sum(\"qty\")).alias(\"sum_qty\")"
 				],
-				"execution_count": null
+				"execution_count": 18
 			},
 			{
 				"cell_type": "code",
@@ -151,7 +151,123 @@
 				"source": [
 					"dfStream1=dfStream1.withColumnRenamed(\"sum(qty)\",\"sum_qty\")"
 				],
+				"execution_count": 14
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"def microbatch(batch_df,batch_id):\r\n",
+					"    delta_table=DeltaTable.forPath(spark, 'abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/streamoutput/tumbling_window')\r\n",
+					"    #print(delta_table)\r\n",
+					"    delta_table.alias('target').merge(batch_df.alias('updates'),'target.item_id = updates.item_id and target.window_Start_Time=updates.window_Start_Time and target.window_end_Time=updates.window_end_Time and target.order_date=updates.order_date').whenMatchedUpdateAll().whenNotMatchedInsertAll().execute()"
+				],
+				"execution_count": 15
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"dfStream1.writeStream.outputMode(\"complete\").format(\"delta\").option(\"path\",\"abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/streamoutput/session_window\").option(\"checkpointLocation\",\"abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/sessoion_window_checkpoint/\").start()"
+				],
+				"execution_count": 16
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"dfStream1.writeStream.outputMode(\"complete\").foreachBatch(microbatch).option(\"checkpointLocation\",\"abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/tumb_checkpoint/\").start()"
+				],
 				"execution_count": null
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					},
+					"microsoft": {
+						"language": "sparksql"
+					},
+					"collapsed": false
+				},
+				"source": [
+					"%%sql\r\n",
+					"select a.*,a.session_window.start as start_window_time, a.session_window.end as end_window_time from  delta.`abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/streamoutput/session_window_1` a"
+				],
+				"execution_count": 29
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df1=spark.sql(\"select a.*,a.session_window.start as start_window_time, a.session_window.end as end_window_time from  delta.`abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/streamoutput/session_window_1` a\")"
+				],
+				"execution_count": 28
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df1.write.save(\"abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/streamoutput/session_window\")"
+				],
+				"execution_count": 26
 			}
 		]
 	}
