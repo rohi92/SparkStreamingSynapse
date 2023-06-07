@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "8e2b1308-7903-443f-afcc-09ba7aa1b2ea"
+				"spark.autotune.trackingId": "5cc61b80-453e-4362-9c2a-ea201fa9623a"
 			}
 		},
 		"metadata": {
@@ -96,6 +96,42 @@
 				},
 				"source": [
 					"dfStream=dfStream.withColumn(\"Order_Date\",to_date(\"Order_Timestamp\"))"
+				],
+				"execution_count": null
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"dfStream=dfStream.withColumn(\"Order_Timestamp\",to_timestamp(\"Order_Timestamp\"))"
+				],
+				"execution_count": null
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"dfStream1=dfStream.withWatermark('Order_Timestamp', '10 minutes').groupBy(\"Item_Id\",\"Order_Date\",session_window(\"Order_Timestamp\",\"6 minutes\")).agg(sum(\"qty\")).alias(\"sum_qty\")"
 				],
 				"execution_count": null
 			}
