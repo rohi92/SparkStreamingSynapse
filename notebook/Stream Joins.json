@@ -18,7 +18,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "ec44b1db-5628-45a5-9c10-0b874bbcf520"
+				"spark.autotune.trackingId": "f0a5b91f-3bae-43cb-a27d-9923436463b6"
 			}
 		},
 		"metadata": {
@@ -83,7 +83,7 @@
 					"    .option(\"spark.cosmos.changeFeed.mode\", \"Incremental\")\\\n",
 					"    .load()"
 				],
-				"execution_count": 13
+				"execution_count": 42
 			},
 			{
 				"cell_type": "code",
@@ -103,7 +103,7 @@
 					"from pyspark.sql import *\r\n",
 					"from delta.tables import *"
 				],
-				"execution_count": 14
+				"execution_count": 43
 			},
 			{
 				"cell_type": "code",
@@ -121,7 +121,7 @@
 				"source": [
 					"dfStream"
 				],
-				"execution_count": 15
+				"execution_count": 44
 			},
 			{
 				"cell_type": "code",
@@ -139,7 +139,7 @@
 				"source": [
 					"dfStream=dfStream.withColumn(\"Order_Date\",to_date(\"Order_Timestamp\"))"
 				],
-				"execution_count": 16
+				"execution_count": 45
 			},
 			{
 				"cell_type": "code",
@@ -157,7 +157,7 @@
 				"source": [
 					"dfStream=dfStream.withColumn(\"Order_Timestamp\",to_timestamp(\"Order_Timestamp\"))"
 				],
-				"execution_count": 17
+				"execution_count": 46
 			},
 			{
 				"cell_type": "code",
@@ -175,7 +175,7 @@
 				"source": [
 					"dfStream"
 				],
-				"execution_count": 18
+				"execution_count": 47
 			},
 			{
 				"cell_type": "code",
@@ -193,7 +193,7 @@
 				"source": [
 					"dfStream1=dfStream.withWatermark('Order_Timestamp', '10 minutes').groupBy(\"Item_Id\",\"Order_Date\",window(\"Order_Timestamp\",\"6 minutes\")).agg(sum(\"qty\")).alias(\"sum_qty\")"
 				],
-				"execution_count": 19
+				"execution_count": 48
 			},
 			{
 				"cell_type": "code",
@@ -211,7 +211,7 @@
 				"source": [
 					"dfStream1=dfStream1.withColumnRenamed(\"sum(qty)\",\"sum_qty\")"
 				],
-				"execution_count": 20
+				"execution_count": 49
 			},
 			{
 				"cell_type": "code",
@@ -230,7 +230,7 @@
 					"dfStream1=dfStream1.withColumn(\"window_Start_Time\",expr(\"window.start\"))\r\n",
 					"dfStream1=dfStream1.withColumn(\"window_end_Time\",expr(\"window.end\"))"
 				],
-				"execution_count": 21
+				"execution_count": 50
 			},
 			{
 				"cell_type": "code",
@@ -269,7 +269,7 @@
 					"    .option(\"spark.cosmos.changeFeed.mode\", \"Incremental\")\\\r\n",
 					"    .load()"
 				],
-				"execution_count": 22
+				"execution_count": 51
 			},
 			{
 				"cell_type": "code",
@@ -287,7 +287,7 @@
 				"source": [
 					"dfStream1"
 				],
-				"execution_count": 23
+				"execution_count": 52
 			},
 			{
 				"cell_type": "code",
@@ -305,7 +305,7 @@
 				"source": [
 					"dfStream2"
 				],
-				"execution_count": 24
+				"execution_count": 53
 			},
 			{
 				"cell_type": "code",
@@ -323,7 +323,7 @@
 				"source": [
 					"dfStream2=dfStream2.withColumnRenamed(\"item_id\",\"item_id_refill\")"
 				],
-				"execution_count": 28
+				"execution_count": 54
 			},
 			{
 				"cell_type": "code",
@@ -341,7 +341,7 @@
 				"source": [
 					"dfStream2=dfStream2.withColumn(\"refill_timestamp\",to_timestamp(\"refill_timestamp\"))"
 				],
-				"execution_count": 31
+				"execution_count": 55
 			},
 			{
 				"cell_type": "code",
@@ -359,7 +359,7 @@
 				"source": [
 					"dfStream2=dfStream2.withColumn(\"refill_date\",to_date(\"refill_timestamp\"))"
 				],
-				"execution_count": 32
+				"execution_count": 56
 			},
 			{
 				"cell_type": "code",
@@ -377,7 +377,7 @@
 				"source": [
 					"dfStream2"
 				],
-				"execution_count": 35
+				"execution_count": 57
 			},
 			{
 				"cell_type": "code",
@@ -395,7 +395,7 @@
 				"source": [
 					"dfStream2=dfStream2.withWatermark('refill_timestamp', '10 minutes').groupBy(\"Item_Id_refill\",\"refill_date\",window(\"refill_timestamp\",\"6 minutes\")).agg(sum(\"stock_Refill_qty\")).alias(\"stock_Refill_qty\")"
 				],
-				"execution_count": 36
+				"execution_count": 58
 			},
 			{
 				"cell_type": "code",
@@ -414,7 +414,7 @@
 					"dfStream2=dfStream2.withColumn(\"stock_start_window\",expr(\"window.start\"))\r\n",
 					"dfStream2=dfStream2.withColumn(\"stock_end_window\",expr(\"window.end\"))"
 				],
-				"execution_count": 39
+				"execution_count": 59
 			},
 			{
 				"cell_type": "code",
@@ -430,9 +430,9 @@
 					}
 				},
 				"source": [
-					"dfStream1.join(dfStream2,expr(\"Item_Id_refill=item_id and refill_date= Order_Date and stock_start_window= window_Start_Time and window_end_Time=stock_end_window  \" ))"
+					"dfStream3=dfStream1.join(dfStream2,expr(\"Item_Id_refill=item_id and refill_date= Order_Date and stock_start_window= window_Start_Time and window_end_Time=stock_end_window  \" ))"
 				],
-				"execution_count": 40
+				"execution_count": 60
 			},
 			{
 				"cell_type": "code",
@@ -448,9 +448,9 @@
 					}
 				},
 				"source": [
-					""
+					"dfStream3.writeStream.outputMode(\"complete\").format(\"delta\").option(\"path\",\"abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/streamoutput/join_output\").option(\"checkpointLocation\",\"abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/join_output/\").start()"
 				],
-				"execution_count": null
+				"execution_count": 61
 			}
 		]
 	}
