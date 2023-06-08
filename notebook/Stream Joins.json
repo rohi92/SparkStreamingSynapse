@@ -1,0 +1,318 @@
+{
+	"name": "Stream Joins",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "SparkStream",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "b821bc5b-2e45-44b8-80ff-604622b97002"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/63f17b4d-2366-4da7-94bf-60fc3d60e3d7/resourceGroups/rohithAmazeRG/providers/Microsoft.Synapse/workspaces/synapsestreaming/bigDataPools/SparkStream",
+				"name": "SparkStream",
+				"type": "Spark",
+				"endpoint": "https://synapsestreaming.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/SparkStream",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net"
+				},
+				"sparkVersion": "3.3",
+				"nodeCount": 10,
+				"cores": 4,
+				"memory": 28,
+				"automaticScaleJobs": false
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "markdown",
+				"source": [
+					"# NOTE\n",
+					"\n",
+					"For Spark 3 Cosmos DB connector has slightly different configuration. Please select different snippest if a Spark 3.1 + pool is attached."
+				]
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"# Load a streaming Spark DataFrame from a Cosmos DB container\n",
+					"# To select a preferred list of regions in a multi-region Cosmos DB account, add .option(\"spark.cosmos.preferredRegions\", \"<Region1>,<Region2>\")\n",
+					"\n",
+					"# For Spark 2.4\n",
+					"# dfStream = spark.readStream\\\n",
+					"#     .format(\"cosmos.oltp\")\\\n",
+					"#     .option(\"spark.synapse.linkedService\", \"CosmosDbNoSql1\")\\\n",
+					"#     .option(\"spark.cosmos.container\", \"orders\")\\\n",
+					"#     .option(\"spark.cosmos.changeFeed.readEnabled\", \"true\")\\\n",
+					"#     .option(\"spark.cosmos.changeFeed.startFromTheBeginning\", \"true\")\\\n",
+					"#     .option(\"spark.cosmos.changeFeed.checkpointLocation\", \"/localReadCheckpointFolder\")\\\n",
+					"#     .option(\"spark.cosmos.changeFeed.queryName\", \"streamQuery\")\\\n",
+					"#     .load()\n",
+					"\n",
+					"# For Spark 3.1 +\n",
+					"dfStream = spark.readStream\\\n",
+					"    .format(\"cosmos.oltp.changeFeed\")\\\n",
+					"    .option(\"spark.synapse.linkedService\", \"CosmosDbNoSql1\")\\\n",
+					"    .option(\"spark.cosmos.container\", \"orders\")\\\n",
+					"    .option(\"spark.cosmos.changeFeed.startFrom\", \"Beginning\")\\\n",
+					"    .option(\"spark.cosmos.changeFeed.mode\", \"Incremental\")\\\n",
+					"    .load()"
+				],
+				"execution_count": 2
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from   pyspark.sql.functions import * \r\n",
+					"from pyspark.sql import *\r\n",
+					"from delta.tables import *"
+				],
+				"execution_count": 3
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"dfStream"
+				],
+				"execution_count": 4
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"dfStream=dfStream.withColumn(\"Order_Date\",to_date(\"Order_Timestamp\"))"
+				],
+				"execution_count": 5
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"dfStream=dfStream.withColumn(\"Order_Timestamp\",to_timestamp(\"Order_Timestamp\"))"
+				],
+				"execution_count": 6
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"dfStream"
+				],
+				"execution_count": 7
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"dfStream1=dfStream.withWatermark('Order_Timestamp', '10 minutes').groupBy(\"Item_Id\",\"Order_Date\",window(\"Order_Timestamp\",\"6 minutes\")).agg(sum(\"qty\")).alias(\"sum_qty\")"
+				],
+				"execution_count": 8
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"dfStream1=dfStream1.withColumnRenamed(\"sum(qty)\",\"sum_qty\")"
+				],
+				"execution_count": 9
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"dfStream1=dfStream1.withColumn(\"window_Start_Time\",expr(\"window.start\"))\r\n",
+					"dfStream1=dfStream1.withColumn(\"window_end_Time\",expr(\"window.end\"))"
+				],
+				"execution_count": 10
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"def microbatch(batch_df,batch_id):\r\n",
+					"    delta_table=DeltaTable.forPath(spark, 'abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/streamoutput/tumbling_window')\r\n",
+					"    #print(delta_table)\r\n",
+					"    delta_table.alias('target').merge(batch_df.alias('updates'),'target.item_id = updates.item_id and target.window_Start_Time=updates.window_Start_Time and target.window_end_Time=updates.window_end_Time and target.order_date=updates.order_date').whenMatchedUpdateAll().whenNotMatchedInsertAll().execute()"
+				],
+				"execution_count": 11
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#dfStream1.writeStream.outputMode(\"complete\").format(\"delta\").option(\"path\",\"abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/streamoutput/tumbling_window\").option(\"checkpointLocation\",\"abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/tumb_checkpoint/\").start()"
+				],
+				"execution_count": 12
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"dfStream1.writeStream.outputMode(\"complete\").foreachBatch(microbatch).option(\"checkpointLocation\",\"abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/tumb_checkpoint/\").start()"
+				],
+				"execution_count": 13
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					},
+					"microsoft": {
+						"language": "sparksql"
+					},
+					"collapsed": false
+				},
+				"source": [
+					"%%sql\r\n",
+					"\r\n",
+					"select item_id,order_date,WINDOW_start_time,window_end_time,sum_qty from delta.`abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/streamoutput/tumbling_window` order by WINDOW_start_time desc;"
+				],
+				"execution_count": 16
+			}
+		]
+	}
+}
