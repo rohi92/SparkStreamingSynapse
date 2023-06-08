@@ -18,7 +18,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "a932f660-84e1-42e1-bb25-f0133888602c"
+				"spark.autotune.trackingId": "e84d87a1-4cb4-4c3d-bb9a-85bb3d7f48e5"
 			}
 		},
 		"metadata": {
@@ -83,7 +83,7 @@
 					"    .option(\"spark.cosmos.changeFeed.mode\", \"Incremental\")\\\n",
 					"    .load()"
 				],
-				"execution_count": 2
+				"execution_count": 1
 			},
 			{
 				"cell_type": "code",
@@ -103,7 +103,7 @@
 					"from pyspark.sql import *\r\n",
 					"from delta.tables import *"
 				],
-				"execution_count": 3
+				"execution_count": 2
 			},
 			{
 				"cell_type": "code",
@@ -121,7 +121,7 @@
 				"source": [
 					"dfStream"
 				],
-				"execution_count": 44
+				"execution_count": 3
 			},
 			{
 				"cell_type": "code",
@@ -175,7 +175,7 @@
 				"source": [
 					"dfStream"
 				],
-				"execution_count": 47
+				"execution_count": 6
 			},
 			{
 				"cell_type": "code",
@@ -193,7 +193,7 @@
 				"source": [
 					"dfStream1=dfStream.withWatermark('Order_Timestamp', '10 minutes').groupBy(\"Item_Id\",\"Order_Date\",window(\"Order_Timestamp\",\"60 minutes\")).agg(sum(\"qty\")).alias(\"sum_qty\")"
 				],
-				"execution_count": 6
+				"execution_count": 7
 			},
 			{
 				"cell_type": "code",
@@ -211,7 +211,7 @@
 				"source": [
 					"dfStream1=dfStream1.withColumnRenamed(\"sum(qty)\",\"sum_qty\")"
 				],
-				"execution_count": 7
+				"execution_count": 8
 			},
 			{
 				"cell_type": "code",
@@ -230,7 +230,7 @@
 					"dfStream1=dfStream1.withColumn(\"window_Start_Time\",expr(\"window.start\"))\r\n",
 					"dfStream1=dfStream1.withColumn(\"window_end_Time\",expr(\"window.end\"))"
 				],
-				"execution_count": 8
+				"execution_count": 9
 			},
 			{
 				"cell_type": "code",
@@ -246,9 +246,9 @@
 					}
 				},
 				"source": [
-					"dfStream1.writeStream.outputMode(\"complete\").format(\"delta\").option(\"path\",\"abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/streamoutput/Order_window\").option(\"checkpointLocation\",\"abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/Orders_Window/\").start()"
+					"dfStream1.writeStream.outputMode(\"complete\").format(\"delta\").option(\"path\",\"abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/streamoutput/Order_stream_output\").option(\"checkpointLocation\",\"abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/tumb_checkpoint/\").start()"
 				],
-				"execution_count": 9
+				"execution_count": 11
 			},
 			{
 				"cell_type": "code",
@@ -287,7 +287,7 @@
 					"    .option(\"spark.cosmos.changeFeed.mode\", \"Incremental\")\\\r\n",
 					"    .load()"
 				],
-				"execution_count": 11
+				"execution_count": 12
 			},
 			{
 				"cell_type": "code",
@@ -305,60 +305,6 @@
 				"source": [
 					"dfStream1"
 				],
-				"execution_count": 52
-			},
-			{
-				"cell_type": "code",
-				"metadata": {
-					"jupyter": {
-						"source_hidden": false,
-						"outputs_hidden": false
-					},
-					"nteract": {
-						"transient": {
-							"deleting": false
-						}
-					}
-				},
-				"source": [
-					"dfStream2"
-				],
-				"execution_count": 53
-			},
-			{
-				"cell_type": "code",
-				"metadata": {
-					"jupyter": {
-						"source_hidden": false,
-						"outputs_hidden": false
-					},
-					"nteract": {
-						"transient": {
-							"deleting": false
-						}
-					}
-				},
-				"source": [
-					"dfStream2=dfStream2.withColumnRenamed(\"item_id\",\"item_id_refill\")"
-				],
-				"execution_count": 12
-			},
-			{
-				"cell_type": "code",
-				"metadata": {
-					"jupyter": {
-						"source_hidden": false,
-						"outputs_hidden": false
-					},
-					"nteract": {
-						"transient": {
-							"deleting": false
-						}
-					}
-				},
-				"source": [
-					"dfStream2=dfStream2.withColumn(\"refill_timestamp\",to_timestamp(\"refill_timestamp\"))"
-				],
 				"execution_count": 13
 			},
 			{
@@ -375,7 +321,7 @@
 					}
 				},
 				"source": [
-					"dfStream2=dfStream2.withColumn(\"refill_date\",to_date(\"refill_timestamp\"))"
+					"dfStream2"
 				],
 				"execution_count": 14
 			},
@@ -393,25 +339,7 @@
 					}
 				},
 				"source": [
-					"dfStream2"
-				],
-				"execution_count": 57
-			},
-			{
-				"cell_type": "code",
-				"metadata": {
-					"jupyter": {
-						"source_hidden": false,
-						"outputs_hidden": false
-					},
-					"nteract": {
-						"transient": {
-							"deleting": false
-						}
-					}
-				},
-				"source": [
-					"dfStream2=dfStream2.withWatermark('refill_timestamp', '10 minutes').groupBy(\"Item_Id_refill\",\"refill_date\",window(\"refill_timestamp\",\"6 minutes\")).agg(sum(\"stock_Refill_qty\")).alias(\"stock_Refill_qty\")"
+					"dfStream2=dfStream2.withColumnRenamed(\"item_id\",\"item_id_refill\")"
 				],
 				"execution_count": 15
 			},
@@ -429,8 +357,7 @@
 					}
 				},
 				"source": [
-					"dfStream2=dfStream2.withColumn(\"stock_start_window\",expr(\"window.start\"))\r\n",
-					"dfStream2=dfStream2.withColumn(\"stock_end_window\",expr(\"window.end\"))"
+					"dfStream2=dfStream2.withColumn(\"refill_timestamp\",to_timestamp(\"refill_timestamp\"))"
 				],
 				"execution_count": 16
 			},
@@ -448,9 +375,9 @@
 					}
 				},
 				"source": [
-					"dfStream2.writeStream.outputMode(\"complete\").format(\"delta\").option(\"path\",\"abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/streamoutput/\").option(\"checkpointLocation\",\"abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/join_output/\").start()"
+					"dfStream2=dfStream2.withColumn(\"refill_date\",to_date(\"refill_timestamp\"))"
 				],
-				"execution_count": null
+				"execution_count": 17
 			},
 			{
 				"cell_type": "code",
@@ -466,7 +393,159 @@
 					}
 				},
 				"source": [
-					"dfStream3=dfStream1.join(dfStream2,expr(\"Item_Id_refill=item_id and refill_date= Order_Date and stock_start_window= window_Start_Time and window_end_Time=stock_end_window  \" ))"
+					"dfStream2"
+				],
+				"execution_count": 18
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"dfStream2=dfStream2.withWatermark('refill_timestamp', '10 minutes').groupBy(\"Item_Id_refill\",\"refill_date\",window(\"refill_timestamp\",\"6 minutes\")).agg(sum(\"stock_Refill_qty\")).alias(\"stock_Refill_qty\")"
+				],
+				"execution_count": 19
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"dfStream2=dfStream2.withColumn(\"stock_start_window\",expr(\"window.start\"))\r\n",
+					"dfStream2=dfStream2.withColumn(\"stock_end_window\",expr(\"window.end\"))\r\n",
+					"dfStream2=dfStream2.withColumnRenamed(\"sum(stock_Refill_qty)\",\"sum_stock_Refill_qty\")"
+				],
+				"execution_count": 26
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"dfStream2.writeStream.outputMode(\"complete\").format(\"delta\").option(\"path\",\"abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/streamoutput/item_Refill/\").option(\"checkpointLocation\",\"abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/item_refill_checkpoint/\").start()"
+				],
+				"execution_count": 27
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"dfStream4=spark.readStream\\\r\n",
+					"    .format(\"delta\")\\\r\n",
+					"    .option(\"path\", \"abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/streamoutput/item_Refill/\")\\\r\n",
+					"    .load()"
+				],
+				"execution_count": 28
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"dfStream5=spark.readStream\\\r\n",
+					"    .format(\"delta\")\\\r\n",
+					"    .option(\"path\", \"abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/streamoutput/Order_stream_output/\")\\\r\n",
+					"    .load()"
+				],
+				"execution_count": 29
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"dfStream4"
+				],
+				"execution_count": 30
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"dfStream5"
+				],
+				"execution_count": 31
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"dfStream3=dfStream4.join(dfStream5,expr(\"Item_Id_refill=item_id and refill_date= Order_Date and stock_start_window= window_Start_Time and window_end_Time=stock_end_window  \" ))"
 				],
 				"execution_count": 60
 			},
