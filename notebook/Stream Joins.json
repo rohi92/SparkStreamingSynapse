@@ -18,7 +18,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "bd2d61d6-b939-48cd-8484-d78cd6a0a20e"
+				"spark.autotune.trackingId": "cec20542-1857-4256-8334-298fb8972db3"
 			}
 		},
 		"metadata": {
@@ -527,7 +527,37 @@
 					}
 				},
 				"source": [
-					"dfStream3.writeStream.outputMode(\"complete\").format(\"delta\").option(\"path\",\"abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/streamoutput/join_output\").option(\"checkpointLocation\",\"abfss://streamsynapse@synapasestream.dfs.core.windows.net/synapse/workspaces/join_output/\").start()"
+					"def microbatch(batch_df,batch_id):\r\n",
+					"    url=\"\"\r\n",
+					"    myobj=\"\"\r\n",
+					"    df1=batch_df.withColumn(\"difference_quantity\",expr(\"sum_stock_Refill_qty-sum_qty\"))\r\n",
+					"    if df1.filter(df1.difference_quantity<100).count()>1:\r\n",
+					"        url = 'https://metadatamanagementemail.azurewebsites.net:443/api/sample_email/triggers/When_a_HTTP_request_is_received/invoke?api-version=2022-05-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=Lz1K7ZusrhyeY1lxp9zV12sPUJUEHxlHVH1HTwL0MMA'\r\n",
+					"        myobj = {\r\n",
+					"            \"emailaddress\":\"rohith.amaze@gmail.com\",\r\n",
+					"            \"body\":\"triggered from python Databricks stream\",\r\n",
+					"            \"subject\":\"Low Stock Alert\"\r\n",
+					"        }\r\n",
+					"        trigger_email(url,myobj)"
+				],
+				"execution_count": null
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"def trigger_email(url,myobj):\r\n",
+					"    x = requests.post(url=url, json = myobj)"
 				],
 				"execution_count": 61
 			}
