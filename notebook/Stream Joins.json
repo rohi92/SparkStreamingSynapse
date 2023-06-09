@@ -18,7 +18,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "e84d87a1-4cb4-4c3d-bb9a-85bb3d7f48e5"
+				"spark.autotune.trackingId": "bd2d61d6-b939-48cd-8484-d78cd6a0a20e"
 			}
 		},
 		"metadata": {
@@ -509,43 +509,7 @@
 					}
 				},
 				"source": [
-					"dfStream4"
-				],
-				"execution_count": 30
-			},
-			{
-				"cell_type": "code",
-				"metadata": {
-					"jupyter": {
-						"source_hidden": false,
-						"outputs_hidden": false
-					},
-					"nteract": {
-						"transient": {
-							"deleting": false
-						}
-					}
-				},
-				"source": [
-					"dfStream5"
-				],
-				"execution_count": 31
-			},
-			{
-				"cell_type": "code",
-				"metadata": {
-					"jupyter": {
-						"source_hidden": false,
-						"outputs_hidden": false
-					},
-					"nteract": {
-						"transient": {
-							"deleting": false
-						}
-					}
-				},
-				"source": [
-					"dfStream3=dfStream4.join(dfStream5,expr(\"Item_Id_refill=item_id and refill_date= Order_Date and stock_start_window= window_Start_Time and window_end_Time=stock_end_window  \" ))"
+					"dfStream6=dfStream5.join(dfStream4,expr(\"Item_Id_refill=item_id and refill_date= Order_Date and stock_start_window= window_Start_Time and window_end_Time=stock_end_window  \" ))"
 				],
 				"execution_count": 60
 			},
