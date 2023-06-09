@@ -18,7 +18,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "cec20542-1857-4256-8334-298fb8972db3"
+				"spark.autotune.trackingId": "4b3a7488-22b9-4b1b-a36f-06c74951452e"
 			}
 		},
 		"metadata": {
@@ -560,6 +560,24 @@
 					"    x = requests.post(url=url, json = myobj)"
 				],
 				"execution_count": 61
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"dfStream6.writeStream.outputMode(\"append\").foreachBatch(microbatch).option(\"checkpointLocation\",\"/mnt/streamsynapse/synapse/workspaces/join/join_output_chkpoint/\").start()"
+				],
+				"execution_count": null
 			}
 		]
 	}
